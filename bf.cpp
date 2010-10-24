@@ -13,6 +13,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <stdio.h> // Using c but works better compared to cin
 
 #define DATASIZE 255
 
@@ -40,12 +41,32 @@ void processChar(char c)
         std::cout << data[ptr];
         break;
   case ',': // Read one char to ptr position
-        cin >> data[ptr];
+        data[ptr] = getchar();
         break;
   default:
    std::cout << "Illegal character: " << c << std::endl; // Shouldn't happening due to valid char test
    break;
  }
+}
+
+// dir = 1 searches for ] dir = -1 searches for [
+int jumpPos(std::string code, int pos, int dir)
+{
+ bool jumpTargetFound = false;
+ int bracketCounter = 0;
+ while(!jumpTargetFound)
+ {
+  if(pos >= code.length() || pos < 0)
+  {
+   std::cout << "Error: [ without ]." << std::endl;
+   return -1;
+  }
+  pos += dir;
+  if(code[pos] == ']') bracketCounter--;
+  else if(code[pos] == '[') bracketCounter++;
+  if(bracketCounter == dir*-1) jumpTargetFound = true;
+ } 
+ return pos;
 }
 
 int main(int argc, char *argv[])
@@ -75,39 +96,15 @@ int main(int argc, char *argv[])
   case '[': // Begin a loop
     if(data[ptr]==0)
     {
-     bool jumpTargetFound = false;
-     int bracketCounter = 0;
-     while(!jumpTargetFound)
-     {
-      if(pos >= code.length())
-      {
-       std::cout << "Error: [ without ]." << std::endl;
-       return 1;
-      }
-      pos++;
-      if(code[pos] == ']') bracketCounter--;
-      else if(code[pos] == '[') bracketCounter++;
-      if(bracketCounter == -1) jumpTargetFound = true;
-     }
+     pos = jumpPos(code, pos, 1);
+     if(pos == -1) return 1;
     }
     break;
   case ']': // End a loop
     if(data[ptr]!=0)
     {
-     bool jumpTargetFound = false;
-     int bracketCounter = 0;
-     while(!jumpTargetFound)
-     {
-      if(pos < 0)
-      {
-       std::cout << "Error: ] without [." << std::endl;
-       return 1;                                 
-      }
-      pos--;
-      if(code[pos] == ']') bracketCounter--;
-      else if(code[pos] == '[') bracketCounter++;
-      if(bracketCounter == 1) jumpTargetFound = true;
-     }                        
+     pos = jumpPos(code, pos, -1);
+     if(pos == 1) return 1;                       
     }
     break;
   default:
