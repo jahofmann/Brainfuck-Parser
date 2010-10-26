@@ -1,0 +1,9 @@
+
+ See license for license informations.
+
+ Very simple brainfuck parser.
+ Reads code from file and should work with every brainfuck program out there.
+ This program should work with every C++ conform compiler.
+
+ Usage:
+ bf FILE
