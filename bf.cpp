@@ -21,6 +21,26 @@ std::string valid = "<>+-.,[]"; // All valid bf commands
 int ptr = 0; // The program pointer
 char data[DATASIZE]; // Our data array
 
+// dir = 1 searches for ] dir = -1 searches for [
+int jumpPos(std::string code, int pos, int dir)
+{
+ bool jumpTargetFound = false;
+ int bracketCounter = 0;
+ while(!jumpTargetFound)
+ {
+  if(pos >= code.length() || pos < 0)
+  {
+   std::cout << "Error: [ without ]." << std::endl;
+   return -1;
+  }
+  pos += dir;
+  if(code[pos] == ']') bracketCounter--;
+  else if(code[pos] == '[') bracketCounter++;
+  if(bracketCounter == dir*-1) jumpTargetFound = true;
+ } 
+ return pos;
+}
+
 void processChar(char c)
 {
  switch(c)
@@ -49,24 +69,29 @@ void processChar(char c)
  }
 }
 
-// dir = 1 searches for ] dir = -1 searches for [
-int jumpPos(std::string code, int pos, int dir)
+void processCode(std::string code, int pos)
 {
- bool jumpTargetFound = false;
- int bracketCounter = 0;
- while(!jumpTargetFound)
+ for(pos = 0; pos < code.length(); pos++) // Process the code
  {
-  if(pos >= code.length() || pos < 0)
+  if(valid.find(code[pos]) == std::string::npos) continue; // Not a valid brainfuck char so continue
+  switch(code[pos])
   {
-   std::cout << "Error: [ without ]." << std::endl;
-   return -1;
+  case '[': // Begin a loop
+    {
+     int bracketPos = jumpPos(code,pos,1);
+     std::string loopCode = code.substr(pos+1,bracketPos-(pos+1));
+     while(data[ptr]!=0)
+     {
+       processCode(loopCode, 0);
+     }
+     pos = bracketPos;
+    }
+    break;
+  default:
+    processChar(code[pos]); // All other commands
+    break;
   }
-  pos += dir;
-  if(code[pos] == ']') bracketCounter--;
-  else if(code[pos] == '[') bracketCounter++;
-  if(bracketCounter == dir*-1) jumpTargetFound = true;
- } 
- return pos;
+ }
 }
 
 int main(int argc, char *argv[])
@@ -87,32 +112,7 @@ int main(int argc, char *argv[])
  {
   data[i] = 0;
  }
- int pos;
- for(pos = 0; pos < code.length(); pos++) // Process the code
- {
-  if(valid.find(code[pos]) == std::string::npos) continue; // Not a valid brainfuck char so continue
-  switch(code[pos])
-  {
-  case '[': // Begin a loop
-    if(data[ptr]==0)
-    {
-     pos = jumpPos(code, pos, 1);
-     if(pos == -1) return 1;
-    }
-    break;
-  case ']': // End a loop
-    if(data[ptr]!=0)
-    {
-     pos = jumpPos(code, pos, -1);
-     if(pos == 1) return 1;                       
-    }
-    break;
-  default:
-    processChar(code[pos]); // All other commands
-    break;
-  }
- } 
-
+ processCode(code,0); 
  return 0;
 }
 
